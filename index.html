@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mutfak Ruh Eşi Testi</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f7;
+    }
+    /* Simple fade / slide animation */
+    .fade-slide {
+      animation: fadeSlideUp 0.45s ease-out;
+    }
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    /* Loading spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 3px solid rgba(148, 163, 184, 0.4);
+      border-top-color: #020617;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-4xl mx-auto px-4 py-6 md:py-10">
+    <!-- Card Shell -->
+    <div class="bg-white shadow-[0_18px_55px_rgba(15,23,42,0.18)] rounded-3xl overflow-hidden border border-slate-100">
+      <!-- Progress Bar -->
+      <div class="w-full h-1.5 bg-slate-100">
+        <div id="progressBar" class="h-1.5 bg-slate-900 rounded-full transition-all duration-300" style="width:0%"></div>
+      </div>
+
+      <div class="p-5 sm:p-8 md:p-10">
+        <!-- Welcome Screen -->
+        <section id="welcomeScreen" class="fade-slide">
+          <div class="flex flex-col md:flex-row gap-8 items-center">
+            <div class="flex-1">
+              <p class="uppercase tracking-[0.18em] text-xs text-slate-400 mb-3">İNTERAKTİF MUTFAK TESTİ</p>
+              <h1 class="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-slate-900 mb-4">
+                Mutfağınızın Ruh Eşini Bulun
+              </h1>
+              <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+                Sadece <span class="font-semibold">7 soruda</span> yaşam tarzınıza, alışkanlıklarınıza ve estetik zevkinize en uygun
+                mutfak karakterini, modelini ve malzeme dünyasını keşfedin.
+              </p>
+              <ul class="text-slate-500 text-sm space-y-1 mb-6">
+                <li>• 15 farklı mutfak arketipi arasından kişiye özel eşleşme</li>
+                <li>• Tercihlerinize göre model, malzeme ve tarz önerileri</li>
+                <li>• Sonuç ekranında mimar randevusu için hızlı yönlendirme</li>
+              </ul>
+              <button id="startBtn" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-slate-900 text-white text-sm sm:text-base font-medium shadow-lg shadow-slate-900/20 hover:bg-black transition-all focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:ring-offset-white">
+                Teste Başla
+                <span class="text-lg">→</span>
+              </button>
+              <p class="mt-3 text-[11px] text-slate-400">
+                Yaklaşık 1 dakikanızı alır. Geri dönüşü olmayan bir işlem yok; sadece ilham var.
+              </p>
+            </div>
+            <div class="flex-1 hidden md:block">
+              <div class="relative overflow-hidden rounded-3xl border border-slate-100 bg-slate-50">
+                <img
+                  src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1200&q=80"
+                  alt="Minimal mutfak"
+                  class="w-full h-full object-cover max-h-[320px]"
+                />
+                <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur rounded-2xl px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400">Örnek Eşleşme</p>
+                    <p class="text-sm font-semibold text-slate-900">İskandinav Ruhu × Mat PET</p>
+                  </div>
+                  <span class="text-[11px] px-3 py-1 rounded-full bg-slate-900 text-white">%100 size özel</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quiz Screen -->
+        <section id="quizScreen" class="hidden">
+          <div id="questionContainer" class="fade-slide">
+            <p class="uppercase tracking-[0.18em] text-[11px] text-slate-400 mb-2" id="questionCounter">Soru 1 / 7</p>
+            <h2 id="questionText" class="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 mb-6">
+              Soru metni
+            </h2>
+            <div id="optionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <!-- Options injected by JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Loading Screen -->
+        <section id="loadingScreen" class="hidden">
+          <div class="fade-slide flex flex-col items-center justify-center py-16 text-center">
+            <div class="spinner mb-6"></div>
+            <p class="text-sm uppercase tracking-[0.18em] text-slate-400 mb-2">Lütfen bekleyin</p>
+            <h2 class="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">Yanıtlarınız Analiz Ediliyor...</h2>
+            <p class="text-slate-500 max-w-md text-sm sm:text-base mb-1">
+              En uygun mutfak arketipiniz, modeliniz ve malzeme kombinasyonunuz belirleniyor.
+            </p>
+            <p class="text-slate-400 text-xs">Bu işlem yaklaşık 2 saniye sürecek.</p>
+          </div>
+        </section>
+
+        <!-- Result Screen -->
+        <section id="resultScreen" class="hidden">
+          <div id="resultContainer" class="fade-slide">
+            <p class="uppercase tracking-[0.18em] text-[11px] text-slate-400 mb-2">SONUÇ</p>
+            <h2 id="resultHeadline" class="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 mb-2">
+              Mutfak Ruh Eşiniz:
+            </h2>
+            <p id="resultArchetypeLabel" class="text-sm sm:text-base text-slate-500 mb-6">
+              
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
+              <!-- Left: Hero & Why -->
+              <div class="space-y-6">
+                <div class="rounded-3xl border border-slate-100 bg-slate-50 overflow-hidden">
+                  <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
+                    <div>
+                      <p class="text-xs uppercase tracking-[0.2em] text-slate-400 mb-1">KARAKTER ÖZETİ</p>
+                      <p id="resultDescription" class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                        
+                      </p>
+                    </div>
+                    <div id="accentPill" class="shrink-0 text-[11px] px-3 py-1 rounded-full bg-slate-900 text-white text-center">
+                      Size Özel Eşleşme
+                    </div>
+                  </div>
+                  <div class="border-t border-slate-100 px-4 sm:px-5 py-3 flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-slate-900/5 text-slate-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      15 arketip arasından seçildi
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full bg-slate-900/5 text-slate-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                      Yaşam tarzı, alışkanlık ve estetik verileriyle
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 mb-2">Neden bu eşleşme?</h3>
+                  <ul id="resultWhyList" class="text-sm text-slate-600 space-y-1.5 list-disc list-inside">
+                    <!-- Why bullets -->
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 mb-2">Güven Veren Detaylar</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100 text-[11px] font-medium text-slate-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      3 Yıl Garanti
+                    </span>
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100 text-[11px] font-medium text-slate-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-lime-500"></span>
+                      E1 Sağlıklı Malzeme
+                    </span>
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100 text-[11px] font-medium text-slate-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                      Soft Close Menteşe
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Image & Model -->
+              <div class="space-y-5">
+                <div class="rounded-3xl overflow-hidden border border-slate-100 bg-slate-50">
+                  <img
+                    id="resultImage"
+                    src="https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1200&q=80"
+                    alt="Mutfak görseli"
+                    class="w-full h-56 sm:h-72 object-cover"
+                  />
+                </div>
+
+                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
+                  <p class="text-[11px] uppercase tracking-[0.2em] text-slate-400 mb-2">ÖNERİLEN ÇÖZÜM</p>
+                  <p class="text-sm text-slate-500 mb-1">Mutfak Modeli</p>
+                  <p id="resultModel" class="text-lg font-semibold text-slate-900 mb-3">
+                    
+                  </p>
+                  <p class="text-xs text-slate-500 mb-3">Bu model; kapak formu, malzeme seçimi ve detay çözümleriyle sizin kullanım alışkanlıklarınıza en çok uyan kombinasyonu sunar.</p>
+                  <button
+                    id="ctaPrimaryTop"
+                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium bg-slate-900 text-white hover:bg-black transition-all">
+                    Mimarımızla Ücretsiz Görüş
+                    <span class="text-base">→</span>
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 text-[11px] text-slate-400">
+                  <span>Sonucunuzu kaydedebilir veya mimar görüşmesi için hemen talepte bulunabilirsiniz.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Sticky CTA Bar (only on result) -->
+    <div
+      id="stickyBar"
+      class="fixed inset-x-0 bottom-0 z-40 hidden md:flex items-center justify-center pointer-events-none"
+    >
+      <div class="pointer-events-auto w-full max-w-3xl mx-auto mb-4 px-4">
+        <div class="bg-white/95 backdrop-blur border border-slate-100 shadow-[0_16px_45px_rgba(15,23,42,0.24)] rounded-2xl px-4 py-3 flex flex-wrap md:flex-nowrap items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p id="stickyTitle" class="text-xs font-medium text-slate-900 truncate">Mutfak Ruh Eşiniz Hazır</p>
+            <p class="text-[11px] text-slate-500 truncate">Mimarımızla ücretsiz görüşmek veya sonucunuzu kaydetmek için seçeneklerden birini seçin.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="ctaPrimaryBottom" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-900 text-white text-xs font-medium hover:bg-black transition-all">
+              Mimarımızla Ücretsiz Görüş
+              <span class="text-sm">→</span>
+            </button>
+            <button id="ctaSave" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full border border-slate-300 text-[11px] font-medium text-slate-700 hover:bg-slate-50 transition-all">
+              Sonucu Kaydet
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------
+    // QUIZ DATA & SCORING
+    // ----------------------
+
+    const archetypes = [
+      'Nordic Soul',
+      'Tech Minimalist',
+      'Vintage Lover',
+      'Palace Keeper',
+      'Eco-Warrior',
+      'Hygiene Freak',
+      'Heavy Duty Chef',
+      'Speed Racer',
+      'Budget Artist',
+      'Storage Hoarder',
+      'Vertical Minimalist',
+      'Display Curator',
+      'Landlord',
+      'Safety-First Parent',
+      'Contemporary Classic'
+    ];
+
+    const questions = [
+      {
+        id: 'Q1',
+        text: 'Bu mutfağın yapılma amacı nedir?',
+        options: [
+          {
+            label: 'Kendi evim, uzun yıllar oturacağım',
+            scores: { 'Nordic Soul': 3, 'Heavy Duty Chef': 3 }
+          },
+          {
+            label: 'Yatırım amaçlı / Kiraya vereceğim',
+            scores: { 'Landlord': 10, 'Budget Artist': 3 }
+          },
+          {
+            label: 'Satışa hazırlıyorum, evin değeri artsın',
+            scores: { 'Speed Racer': 5, 'Landlord': 5 }
+          },
+          {
+            label: 'Sadece stil değişikliği / Dekorasyon',
+            scores: { 'Display Curator': 5, 'Palace Keeper': 4 }
+          }
+        ]
+      },
+      {
+        id: 'Q2',
+        text: 'Mesleğiniz ve mutfakla ilişkiniz hangisine daha yakın?',
+        options: [
+          {
+            label: 'Profesyonel aşçıyım veya yemek yapmaya tutkuluyum',
+            scores: { 'Heavy Duty Chef': 10 }
+          },
+          {
+            label: 'Teknoloji / tasarım odaklı bir iş yapıyorum',
+            scores: { 'Tech Minimalist': 5 }
+          },
+          {
+            label: 'Mutfakta çok az zaman geçiriyorum, pratiklik önemli',
+            scores: { 'Speed Racer': 4 }
+          },
+          {
+            label: 'Mutfak evin kalbi, aile burada toplanıyor',
+            scores: { 'Storage Hoarder': 5 }
+          }
+        ]
+      },
+      {
+        id: 'Q3',
+        text: 'Evde kimler yaşıyor?',
+        options: [
+          {
+            label: 'Tek yaşıyorum / Çift olarak yaşıyoruz',
+            scores: { 'Tech Minimalist': 3 }
+          },
+          {
+            label: 'Küçük çocuklu bir aileyiz (0–6 yaş)',
+            scores: { 'Safety-First Parent': 10, 'Hygiene Freak': 5 }
+          },
+          {
+            label: 'Kalabalık bir aileyiz (3+ kişi, sık misafir)',
+            scores: { 'Storage Hoarder': 5 }
+          },
+          {
+            label: 'Evcil hayvanlarımız var',
+            scores: { 'Hygiene Freak': 4, 'Heavy Duty Chef': 3 }
+          }
+        ]
+      },
+      {
+        id: 'Q4',
+        text: 'Hayalinizdeki mutfak tarzını en iyi hangisi anlatıyor?',
+        options: [
+          {
+            label: 'Modern, dümdüz hatlar, kulpsuz ve minimal',
+            scores: { 'Tech Minimalist': 10 }
+          },
+          {
+            label: 'Sıcak, doğal ahşap tonları, İskandinav yalınlığı',
+            scores: { 'Nordic Soul': 10 }
+          },
+          {
+            label: 'Klasik çizgiler, gösterişli, zengin detaylı',
+            scores: { 'Palace Keeper': 10 }
+          },
+          {
+            label: 'Country / vintage, nostaljik ve samimi',
+            scores: { 'Vintage Lover': 10 }
+          },
+          {
+            label: 'Mimari detaylı, sıra dışı, yüksek tavan / niş çözümler',
+            scores: { 'Vertical Minimalist': 10 }
+          }
+        ]
+      },
+      {
+        id: 'Q5',
+        text: 'Renk ve malzeme tercihinizde hangisi daha ağır basıyor?',
+        options: [
+          {
+            label: 'Parlak yüzeyler, geldiğimi hissettirsin',
+            scores: { 'Palace Keeper': 5 }
+          },
+          {
+            label: 'Mat yüzeyler, parmak izi hiç görünmesin',
+            scores: { 'Hygiene Freak': 10 }
+          },
+          {
+            label: 'Doğal taş, ahşap ve organik dokular',
+            scores: { 'Eco-Warrior': 5 }
+          },
+          {
+            label: 'Dayanıklı, ekonomik ve fiyat–performans odaklı',
+            scores: { 'Budget Artist': 5 }
+          }
+        ]
+      },
+      {
+        id: 'Q6',
+        text: 'Sizin için bu mutfakta en büyük öncelik nedir?',
+        options: [
+          {
+            label: 'Uzun ömürlü, dayanıklı ve sağlam olması',
+            scores: { 'Heavy Duty Chef': 5 }
+          },
+          {
+            label: 'Temizliği kolay olsun, leke tutmasın',
+            scores: { 'Hygiene Freak': 10 }
+          },
+          {
+            label: 'Dolap içleri ve depolama alanlarının maksimum kullanımı',
+            scores: { 'Storage Hoarder': 10 }
+          },
+          {
+            label: 'Gördüğüm anda içimi açan estetik bir görünüm',
+            scores: { 'Display Curator': 10 }
+          },
+          {
+            label: 'Çevre dostu malzeme ve sürdürülebilir çözümler',
+            scores: { 'Eco-Warrior': 10 }
+          }
+        ]
+      },
+      {
+        id: 'Q7',
+        text: 'Bütçe ve zaman açısından hangisi size daha yakın?',
+        options: [
+          {
+            label: 'Kısıtlı bütçem var, fiyat–performans dengesi önemli',
+            scores: { 'Budget Artist': 10 }
+          },
+          {
+            label: 'Çok acil, mümkün olan en hızlı çözümü arıyorum',
+            scores: { 'Speed Racer': 10 }
+          },
+          {
+            label: 'Daha esnek bakıyorum, tam istediğim gibi olsun yeter',
+            scores: { 'Palace Keeper': 3, 'Contemporary Classic': 3 }
+          }
+        ]
+      }
+    ];
+
+    // Result content per archetype
+    const archetypeContent = {
+      'Nordic Soul': {
+        label: 'Nordic Soul',
+        headline: 'Mutfak Ruh Eşiniz: "İskandinav Ruhu"',
+        description:
+          'Sizin için lüks, sadelikte gizli. Doğal dokular, sıcak ahşap tonları ve göz yormayan minimalist çizgiler arıyorsunuz. Evinizdeki "hygge" (mutluluk/huzur) köşesini tasarladık.',
+        model: 'NORDA (N1/N2)',
+        why: [
+          '🌲 Doğal Dokunuş: İnce çerçeveli tasarımı ve doğal ahşap kaplama seçenekleri ile doğayı evinize taşır.',
+          "🖼️ Zarif Çerçeve: 8 mm'lik incecik çerçevesiyle kaba değil, son derece narin bir duruş sergiler.",
+          '✨ Sıcak Minimalizm: Soğuk modernizm yerine, mat lakenin ve ahşabın sıcak uyumunu sunar.',
+          'Tamamlayıcı Öneri: Ahşap raflı açık üniteler ve pastel tonlu seramik tezgâh ile görünümü tamamlayın.'
+        ],
+        accent: '#16a34a',
+        image:
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Tech Minimalist': {
+        label: 'Tech Minimalist',
+        headline: 'Mutfak Ruh Eşiniz: "Teknolojik Minimalist"',
+        description:
+          'Karmaşaya, gereksiz detaylara ve kulplara yer yok. Sizin dünyanızda "az, çoktur". Pürüzsüz yüzeyler ve akıllı fonksiyonlar istiyorsunuz.',
+        model: 'INOVA (Kulpsuz Sistem)',
+        why: [
+          '🚫 Görünmez Detaylar: GOLA profil sistemi sayesinde kulp çıkıntısı yoktur, kapaklar bütünsel bir yüzey gibi görünür.',
+          '☁️ Soft Touch: Soft Lak (M2) teknolojisi ile yüzeyler kadifemsi, ekstra mat ve dokunması keyiflidir.',
+          '🔌 Entegre Yaşam: Ankastre cihazlarınız ve teknolojik aksesuarlarınızla kusursuz uyum sağlar.',
+          'Tamamlayıcı Öneri: Tezgâh içinden çıkan priz sistemleri ve sensörlü aydınlatmalarla konforu artırın.'
+        ],
+        accent: '#020617',
+        image:
+          'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Vintage Lover': {
+        label: 'Vintage Lover',
+        headline: 'Mutfak Ruh Eşiniz: "Nostaljik Modern"',
+        description:
+          '"Eskiden mutfaklar daha sıcaktı" diyenlerdensiniz ama modern teknolojiden vazgeçmiyorsunuz. Country havasını şehirli bir stille birleştirdik.',
+        model: 'VEGA (V1)',
+        why: [
+          '🕰️ Zamansız Çizgiler: 5.5 cm\'lik ince çerçevesiyle sevdiğiniz "Shaker" tarzını modern bir dille yorumlar.',
+          '🎨 Pastel Rüyalar: Mat lake renk seçenekleriyle (pastel yeşiller, kremler) vintage ruhunu yansıtır.',
+          '🤏 Karakterli Kulplar: Çerçeve üzerine monte edilen özel kulplarla stilinizi tamamlar.',
+          'Tamamlayıcı Öneri: Eskitme pirinç (antik gold) çanak kulplar ile karakteri güçlendirin.'
+        ],
+        accent: '#a855f7',
+        image:
+          'https://images.unsplash.com/photo-1484100356142-db6ab6244067?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Palace Keeper': {
+        label: 'Palace Keeper',
+        headline: 'Mutfak Ruh Eşiniz: "İhtişamlı Saraylı"',
+        description:
+          'Mutfak sizin için bir sahne. Parlak yüzeyler, zengin detaylar ve "Ben buradayım" diyen bir tasarım istiyorsunuz.',
+        model: 'TOSCANA (T7 – Parlak Lake)',
+        why: [
+          '💎 Göz Kamaştıran Parlaklık: Parlak lake yüzeyler ışığı bir ayna gibi yansıtarak mutfağınızı daha geniş ve lüks gösterir.',
+          '👑 Kraliyet Dokunuşu: Taç detayları ve büfe tarzı camlı dolaplarla klasik bir zenginlik sunar.',
+          '🏛️ Ustalık Eseri: Çift yüz frezeli özel işçilikle üretilmiş kapaklar prestij hissini artırır.',
+          'Tamamlayıcı Öneri: Camlı, ışıklı büfe dolapları ve altın detaylı aksesuarlarla sahneyi tamamlayın.'
+        ],
+        accent: '#b91c1c',
+        image:
+          'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Eco-Warrior': {
+        label: 'Eco-Warrior',
+        headline: 'Mutfak Ruh Eşiniz: "Doğa Dostu"',
+        description:
+          'Tarzınızdan ödün vermeden gezegeni korumak istiyorsunuz. Sizin için "güzel" demek, aynı zamanda "sorumlu" demektir.',
+        model: 'SIENA (Mat PET)',
+        why: [
+          '♻️ Geri Dönüşüm Kahramanı: Kapaklarınız %40\'a kadar geri dönüştürülmüş malzemeden üretildi.',
+          '🌱 Sağlıklı Nefes: E1 sınıfı, sağlığa zarar vermeyen, formaldehit emisyonu düşük malzemeler kullanılır.',
+          '🌍 Uzun Ömürlü: Doğayı korumanın en iyi yolu, sık değiştirmemektir. PET yüzeyler neme ve darbeye dayanıklıdır.',
+          'Tamamlayıcı Öneri: Ayrıştırıcı çöp kutusu sistemleri ve su tasarruflu armatürler tercih edin.'
+        ],
+        accent: '#15803d',
+        image:
+          'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Heavy Duty Chef': {
+        label: 'Heavy Duty Chef',
+        headline: 'Mutfak Ruh Eşiniz: "Usta Şef"',
+        description:
+          'Burası sadece bir yaşam alanı değil, bir lezzet atölyesi. Sizin için dayanıklılık, ergonomi ve kapasite her şeyden önce gelir.',
+        model: 'INOVA (Yüksek Tezgah)',
+        why: [
+          '📏 Profesyonel Ergonomi: Standarttan 5 cm daha yüksek (90.8 cm) tezgah seviyesi ile belinizi yormadan çalışın.',
+          '🛡️ Zırh Gibi Yüzeyler: Akrilik veya Kristal PET seçenekleriyle çizilmelere meydan okuyan kapaklar.',
+          '💧 Suya Dayanıklı: Eviye dolabındaki alüminyum zemin ile su sızıntılarına karşı tam koruma sağlar.',
+          'Tamamlayıcı Öneri: Geniş "workstation" evyeler ve çekmece içi profesyonel düzenleyicilerle iş akışınızı hızlandırın.'
+        ],
+        accent: '#ea580c',
+        image:
+          'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Speed Racer': {
+        label: 'Speed Racer',
+        headline: 'Mutfak Ruh Eşiniz: "Pratik ve Hızlı"',
+        description:
+          'Zamanınız değerli. Beklemek istemiyorsunuz ama kaliteden de ödün vermek yok. Sizin için en hızlı ve akılcı çözümü hazırladık.',
+        model: 'VEGA veya PRIME (Polimerik)',
+        why: [
+          '🚀 Hızlı Üretim: Mat polimerik malzeme, üretim süresi en kısa olan teknolojidir; mutfağınız hızla kullanıma hazır olur.',
+          '✅ Garantili Çözüm: 3 yıl garanti ile hem hızlı hem güvenli bir tercih yaparsınız.',
+          '💰 Akıllı Seçim: Lake görünümünü, çok daha kısa sürede ve uygun bütçeyle elde edersiniz.',
+          'Tamamlayıcı Öneri: Stoklu armatür ve evye setleriyle proje süresini daha da kısaltın.'
+        ],
+        accent: '#0ea5e9',
+        image:
+          'https://images.unsplash.com/photo-1600585154340-0ef3c08c0632?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Budget Artist': {
+        label: 'Budget Artist',
+        headline: 'Mutfak Ruh Eşiniz: "Akıllı Yatırımcı"',
+        description:
+          'Bütçenizi yönetirken estetikten vazgeçmek istemiyorsunuz. "Pahalı görünen" ama cüzdan dostu bir mutfak tam size göre.',
+        model: 'VEGA (Mat PET / Polimerik)',
+        why: [
+          '🎨 Lake Etkisi: Kenar bandı olmayan özel kaplama teknolojisi sayesinde, bütçe dostu fiyata "lake" boya görünümü sunar.',
+          '💸 Fiyat/Performans: Ekonomik segmentte yer almasına rağmen premium bir duruş sergiler.',
+          '💪 Dayanıklı: Günlük kullanım darbelerine karşı hassas değildir, uzun süre formunu korur.',
+          'Tamamlayıcı Öneri: Şık ama uygun fiyatlı siyah metal kulplarla görünümü yükseltin.'
+        ],
+        accent: '#6366f1',
+        image:
+          'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Storage Hoarder': {
+        label: 'Storage Hoarder',
+        headline: 'Mutfak Ruh Eşiniz: "Düzen Uzmanı"',
+        description:
+          '"Bunu nereye koyacağım?" derdine son. Tezgahın üzeri boş, dolapların içi dolu olsun istiyorsunuz. Maksimum hacim sizin hakkınız.',
+        model: 'INOVA (Maxi Kapasite)',
+        why: [
+          '📦 %20 Daha Fazla Alan: Yükseltilmiş alt dolap yapısı ve 90.8 cm tezgah yüksekliği ile ekstra raf alanı kazandırır.',
+          '🏗️ Boy Dolaplar: Yüksek kiler sistemleri ile mutfağınızı tavana kadar depolama alanına dönüştürür.',
+          '📐 Akıllı Köşeler: Ölü alan bırakmayan köşe mekanizmaları ile her santimi kullanırsınız.',
+          'Tamamlayıcı Öneri: Kiler mekanizmaları ve çekmece içi kaşıklık/tabaklık sistemleri ile tam düzen sağlayın.'
+        ],
+        accent: '#0f766e',
+        image:
+          'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Vertical Minimalist': {
+        label: 'Vertical Minimalist',
+        headline: 'Mutfak Ruh Eşiniz: "Mimari Çizgiler"',
+        description:
+          'Düz kapaklar size sıkıcı, klasikler ise demode geliyor. Siz tasarımda derinlik, ritim ve mimari bir duruş arıyorsunuz.',
+        model: 'FRESCA',
+        why: [
+          '🏛️ Dikey Ritim: Kapak yüzeyindeki yaklaşık 5 cm aralıklı dikey fugalar, mutfağınıza eşsiz bir mimari derinlik katar.',
+          '🎨 Sıra Dışı: Standartların dışında, cesur ve modern bir karakter ortaya koyar.',
+          '📏 Bütünsel Tasarım: Yanak panellerinde bile devam eden çizgilerle kesintisiz bir görünüm sunar.',
+          'Tamamlayıcı Öneri: Minimalist sarkıt aydınlatmalarla dikey ritmi vurgulayın.'
+        ],
+        accent: '#0891b2',
+        image:
+          'https://images.unsplash.com/photo-1617099404995-0acef0406781?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Display Curator': {
+        label: 'Display Curator',
+        headline: 'Mutfak Ruh Eşiniz: "Vitrin Tutkunu"',
+        description:
+          'Güzel porselenleriniz dolaplarda saklı kalmasın. Mutfak sizin için sadece yemek yeri değil, görsel bir şölen alanı.',
+        model: 'PRIME (Vitrin Serisi)',
+        why: [
+          '💡 Işık Oyunları: Profil kapaklı cam dolaplar ve dikey entegre aydınlatmalar ile mutfağınız akşamları bir sahneye dönüşür.',
+          '🖼️ Sergileme Alanı: Geniş cam modüller, koleksiyonlarınızı sergilemek için idealdir.',
+          '✨ Şeffaf Güzellik: Sable cam uygulaması ile yarı şeffaf, gizemli ve şık bir görünüm sunar.',
+          'Tamamlayıcı Öneri: Cam raflar ve dolap içi spot aydınlatmalarla vitrin etkisini güçlendirin.'
+        ],
+        accent: '#7c3aed',
+        image:
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Landlord': {
+        label: 'Landlord',
+        headline: 'Mutfak Ruh Eşiniz: "Profesyonel Yatırımcı"',
+        description:
+          'Duygusal değil, mantıksal bir seçim peşindesiniz. Kiracı kullanımına dayanacak, modası geçmeyecek ve yatırımınızın karşılığını verecek bir mutfak istiyorsunuz.',
+        model: 'PRIME (Melamin)',
+        why: [
+          '🛡️ Kiracı Dostu: Dokulu melamin yüzeyler darbeye, çizilmeye ve hor kullanıma karşı en dayanıklı seçeneklerdendir.',
+          '🧼 Kolay Bakım: Leke tutmaz, silinmesi kolaydır, ekstra özen istemez.',
+          '⚪ Nötr Renkler: Herkesin beğeneceği, risk almayan vizon, beyaz ve gri tonları.',
+          'Tamamlayıcı Öneri: Krom metal kulplar ile hem dayanıklı hem zamansız bir görünüm elde edin.'
+        ],
+        accent: '#f97316',
+        image:
+          'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Safety-First Parent': {
+        label: 'Safety-First Parent',
+        headline: 'Mutfak Ruh Eşiniz: "Güvenli Liman"',
+        description:
+          'Mutfaktaki en değerli şey, içinde koşturan minikler. Sizin için öncelik "kaza riski sıfır"a en çok yaklaşan, güvenli bir yaşam alanı.',
+        model: 'SIENA veya PRIME (Mat PET)',
+        why: [
+          '🤫 Yavaş Kapanma: Tüm kapak ve çekmecelerde fren sistemi standarttır; minik parmaklar asla sıkışmaz.',
+          '🚫 Kırılma Riski Yok: Alt dolaplarda cam kullanmıyor, darbe emici PET yüzeyler öneriyoruz.',
+          '🧼 Toksik Değil: İnsan sağlığına zararsız E1 sertifikalı malzemelerle içiniz rahat eder.',
+          'Tamamlayıcı Öneri: Kilitli deterjanlık dolapları ile kimyasalları çocuklardan uzak tutun.'
+        ],
+        accent: '#f97316',
+        image:
+          'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Contemporary Classic': {
+        label: 'Contemporary Classic',
+        headline: 'Mutfak Ruh Eşiniz: "Modern Klasik"',
+        description:
+          'Geçici trendlerin peşinde değilsiniz. Klasiğin ağırlığını modernizmin ferahlığıyla birleştiren, yıllarca eskimeyecek bir stil arıyorsunuz.',
+        model: 'SIENA (S1)',
+        why: [
+          '⚖️ Mükemmel Denge: Çerçeveli klasik yapıyı, modern dikey çizgiler ve kulpsuz detaylarla harmanlar.',
+          '🏛️ Modern Taçlar: Abartılı oymalar yerine, koleksiyona özel tasarlanmış yalın taç ve ışık bandı detayları sunar.',
+          '🖐️ Mat Şıklık: Mat yüzeyi ile hem asil hem de çağdaş bir duruş sağlar.',
+          'Tamamlayıcı Öneri: Modern formda antik bakır kulplarla zamanı aşan bir görünüm yakalayın.'
+        ],
+        accent: '#1d4ed8',
+        image:
+          'https://images.unsplash.com/photo-1600585154340-0ef3c08c0632?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Hygiene Freak': {
+        label: 'Hygiene Freak',
+        headline: 'Mutfak Ruh Eşiniz: "Kusursuz Titiz"',
+        description:
+          'Sizin için mutfak sadece yemek yapılan bir yer değil; hijyenin ve ferahlığın kalesi. Parmak izlerine, çıkmayan lekelere ve karmaşaya tahammülünüz yok. Sizi anlıyoruz.',
+        model: 'SIENA (Mat PET Serisi)',
+        why: [
+          '🛡️ Parmak İzine Son: Mat PET yüzey teknolojisi sayesinde dolaplarınızda parmak izi kalmaz; sürekli silmek zorunda kalmazsınız.',
+          '🤫 Sessiz ve Güvenli: Tüm kapaklarda standart olan yavaş kapanma (soft close) özelliği sayesinde kapaklar çarpmaz, sessizdir ve güvenlidir.',
+          "🌿 Sağlıklı ve Yeşil: %40'a kadar geri dönüştürülmüş malzemeden üretilen, insan sağlığına zararsız E1 sınıfı kapaklar kullanılır.",
+          'Tamamlayıcı Öneri: Kir tutmayan tezgâh altı eviye ve kulpsuz/bas-aç kapak tasarımı ile hijyen rutinini kolaylaştırın.'
+        ],
+        accent: '#0f766e',
+        image:
+          'https://images.unsplash.com/photo-1617096034796-328e3c535743?auto=format&fit=crop&w=1200&q=80'
+      }
+    };
+
+    // Make sure all archetypes have some content; if missing, fall back to Contemporary Classic {
+        label: 'Safety-First Parent',
+        headline: 'Mutfak Ruh Eşiniz: "Güvenli Liman"',
+        description:
+          'Mutfaktaki en değerli şey, içinde koşturan minikler. Sizin için öncelik "kaza riski sıfır"a en çok yaklaşan, güvenli bir yaşam alanı.',
+        model: 'SIENA veya PRIME (Mat PET)',
+        why: [
+          '🤫 Yavaş Kapanma: Tüm kapak ve çekmecelerde fren sistemi standarttır; minik parmaklar asla sıkışmaz.',
+          '🚫 Kırılma Riski Yok: Alt dolaplarda cam kullanmıyor, darbe emici PET yüzeyler öneriyoruz.',
+          '🧼 Toksik Değil: İnsan sağlığına zararsız E1 sertifikalı malzemelerle içiniz rahat eder.',
+          'Tamamlayıcı Öneri: Kilitli deterjanlık dolapları ile kimyasalları çocuklardan uzak tutun.'
+        ],
+        accent: '#f97316',
+        image:
+          'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Contemporary Classic': {
+        label: 'Contemporary Classic',
+        headline: 'Mutfak Ruh Eşiniz: "Modern Klasik"',
+        description:
+          'Geçici trendlerin peşinde değilsiniz. Klasiğin ağırlığını modernizmin ferahlığıyla birleştiren, yıllarca eskimeyecek bir stil arıyorsunuz.',
+        model: 'SIENA (S1)',
+        why: [
+          '⚖️ Mükemmel Denge: Çerçeveli klasik yapıyı, modern dikey çizgiler ve kulpsuz detaylarla harmanlar.',
+          '🏛️ Modern Taçlar: Abartılı oymalar yerine, koleksiyona özel tasarlanmış yalın taç ve ışık bandı detayları sunar.',
+          '🖐️ Mat Şıklık: Mat yüzeyi ile hem asil hem de çağdaş bir duruş sağlar.',
+          'Tamamlayıcı Öneri: Modern formda antik bakır kulplarla zamanı aşan bir görünüm yakalayın.'
+        ],
+        accent: '#1d4ed8',
+        image:
+          'https://images.unsplash.com/photo-1600585154340-0ef3c08c0632?auto=format&fit=crop&w=1200&q=80'
+      },
+      'Hygiene Freak': {
+        label: 'Hygiene Freak',
+        headline: 'Mutfak Ruh Eşiniz: "Kusursuz Titiz"',
+        description:
+          'Sizin için mutfak sadece yemek yapılan bir yer değil; hijyenin ve ferahlığın kalesi. Parmak izlerine, çıkmayan lekelere ve karmaşaya tahammülünüz yok. Sizi anlıyoruz.',
+        model: 'SIENA (Mat PET Serisi)',
+        why: [
+          '🛡️ Parmak İzine Son: Mat PET yüzey teknolojisi sayesinde dolaplarınızda parmak izi kalmaz; sürekli silmek zorunda kalmazsınız.',
+          '🤫 Sessiz ve Güvenli: Tüm kapaklarda standart olan yavaş kapanma (soft close) özelliği sayesinde kapaklar çarpmaz, sessizdir ve güvenlidir.',
+          "🌿 Sağlıklı ve Yeşil: %40'a kadar geri dönüştürülmüş malzemeden üretilen, insan sağlığına zararsız E1 sınıfı kapaklar kullanılır.",
+          'Tamamlayıcı Öneri: Kir tutmayan tezgâh altı eviye ve kulpsuz/bas-aç kapak tasarımı ile hijyen rutinini kolaylaştırın.'
+        ],
+        accent: '#0f766e',
+        image:
+          'https://images.unsplash.com/photo-1617096034796-328e3c535743?auto=format&fit=crop&w=1200&q=80'
+      }
+    };
+
+    // Make sure all archetypes have some content; if missing, fall back to Contemporary Classic
+    archetypes.forEach((key) => {
+      if (!archetypeContent[key]) {
+        archetypeContent[key] = {
+          ...archetypeContent['Contemporary Classic'],
+          label: key,
+          headline: `Mutfak Ruh Eşiniz: ${key}`
+        };
+      }
+    });
+
+    // ----------------------
+    // STATE
+    // ----------------------
+
+    let currentQuestionIndex = 0;
+    const scores = {};
+    archetypes.forEach((key) => (scores[key] = 0));
+
+    // ----------------------
+    // DOM ELEMENTS
+    // ----------------------
+
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const resultScreen = document.getElementById('resultScreen');
+
+    const startBtn = document.getElementById('startBtn');
+    const questionCounter = document.getElementById('questionCounter');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const progressBar = document.getElementById('progressBar');
+
+    const resultHeadline = document.getElementById('resultHeadline');
+    const resultArchetypeLabel = document.getElementById('resultArchetypeLabel');
+    const resultDescription = document.getElementById('resultDescription');
+    const resultModel = document.getElementById('resultModel');
+    const resultWhyList = document.getElementById('resultWhyList');
+    const resultImage = document.getElementById('resultImage');
+    const accentPill = document.getElementById('accentPill');
+
+    const stickyBar = document.getElementById('stickyBar');
+    const stickyTitle = document.getElementById('stickyTitle');
+    const ctaPrimaryTop = document.getElementById('ctaPrimaryTop');
+    const ctaPrimaryBottom = document.getElementById('ctaPrimaryBottom');
+    const ctaSave = document.getElementById('ctaSave');
+
+    // ----------------------
+    // HELPERS
+    // ----------------------
+
+    function showScreen(active) {
+      [welcomeScreen, quizScreen, loadingScreen, resultScreen].forEach((el) => {
+        if (!el) return;
+        if (el === active) {
+          el.classList.remove('hidden');
+          // restart animation
+          el.classList.remove('fade-slide');
+          void el.offsetWidth;
+          el.classList.add('fade-slide');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+    }
+
+    function updateProgress() {
+      const total = questions.length;
+      const current = Math.min(currentQuestionIndex + 1, total);
+      const percent = (current / total) * 100;
+      progressBar.style.width = percent + '%';
+    }
+
+    function renderQuestion() {
+      const q = questions[currentQuestionIndex];
+      if (!q) return;
+
+      questionCounter.textContent = `Soru ${currentQuestionIndex + 1} / ${questions.length}`;
+      questionText.textContent = q.text;
+
+      optionsContainer.innerHTML = '';
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className =
+          'group text-left w-full h-full bg-slate-50 border border-slate-100 hover:border-slate-900 hover:bg-slate-900/90 hover:text-white rounded-2xl px-4 py-3 sm:px-5 sm:py-4 transition-all flex items-start gap-3 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 focus:ring-offset-white';
+
+        btn.innerHTML = `
+          <div class="mt-0.5 text-xs text-slate-400 group-hover:text-slate-200">${
+            index + 1 < 10 ? '0' + (index + 1) : index + 1
+          }</div>
+          <div class="flex-1">
+            <p class="text-sm sm:text-base font-medium">${opt.label}</p>
+          </div>
+        `;
+
+        btn.addEventListener('click', () => {
+          applyScores(opt.scores);
+          goToNextQuestion();
+        });
+
+        optionsContainer.appendChild(btn);
+      });
+
+      updateProgress();
+    }
+
+    function applyScores(optionScores) {
+      Object.entries(optionScores).forEach(([key, value]) => {
+        if (sco
