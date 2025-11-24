@@ -741,6 +741,7 @@
       }
     });
 
+
     // ----------------------
     // STATE
     // ----------------------
@@ -840,4 +841,89 @@
 
     function applyScores(optionScores) {
       Object.entries(optionScores).forEach(([key, value]) => {
-        if (sco
+        if (typeof scores[key] === 'number') {
+          scores[key] += value;
+        }
+      });
+    }
+
+    function goToNextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        showLoadingThenResults();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function getTopArchetype() {
+      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      return sorted[0]?.[0] || archetypes[0];
+    }
+
+    function renderResult(key) {
+      const data = archetypeContent[key] || archetypeContent['Contemporary Classic'];
+      resultHeadline.textContent = data.headline;
+      resultArchetypeLabel.textContent = data.label;
+      resultDescription.textContent = data.description;
+      resultModel.textContent = data.model;
+      resultImage.src = data.image;
+      accentPill.style.backgroundColor = data.accent || '#020617';
+
+      stickyTitle.textContent = `${data.label} mutfak öneriniz hazır`;
+
+      resultWhyList.innerHTML = '';
+      data.why.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        resultWhyList.appendChild(li);
+      });
+    }
+
+    function showLoadingThenResults() {
+      showScreen(loadingScreen);
+      setTimeout(() => {
+        const topArchetype = getTopArchetype();
+        renderResult(topArchetype);
+        showScreen(resultScreen);
+        stickyBar.classList.remove('hidden');
+      }, 1200);
+    }
+
+    function resetQuiz() {
+      currentQuestionIndex = 0;
+      archetypes.forEach((key) => (scores[key] = 0));
+      progressBar.style.width = '0%';
+      stickyBar.classList.add('hidden');
+      renderQuestion();
+      showScreen(quizScreen);
+    }
+
+    function setupCtas() {
+      const ctaButtons = [
+        [ctaPrimaryTop, 'Mimarımızla Ücretsiz Görüş'],
+        [ctaPrimaryBottom, 'Mimarımızla Ücretsiz Görüş (alt bar)'],
+        [ctaSave, 'Sonucu Kaydet']
+      ];
+
+      ctaButtons.forEach(([btn, label]) => {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          alert(`${label} için formunuz açılacak.`);
+        });
+      });
+    }
+
+    // ----------------------
+    // EVENT BINDINGS
+    // ----------------------
+
+    startBtn?.addEventListener('click', () => {
+      resetQuiz();
+    });
+
+    setupCtas();
+    showScreen(welcomeScreen);
+  </script>
+</body>
+</html>
